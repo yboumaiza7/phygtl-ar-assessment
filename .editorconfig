@@ -1,0 +1,100 @@
+﻿[*.cs]
+
+charset = utf-8
+indent_style = tab
+indent_size = 4
+end_of_line = crlf
+insert_final_newline = true
+
+# IDE0130: Namespace does not match folder structure
+dotnet_diagnostic.IDE0130.severity = none
+
+# EditorConfig is awesome: https://EditorConfig.org
+root = true
+
+# Naming rules
+dotnet_naming_rule.constants_must_be_upper_case.symbols = constants
+dotnet_naming_rule.constants_must_be_upper_case.style = upper_case_style
+dotnet_naming_rule.constants_must_be_upper_case.severity = warning
+
+# Symbol specifications
+dotnet_naming_symbols.public_symbols.applicable_kinds = class,struct,interface,enum,property,method,event,delegate
+dotnet_naming_symbols.public_symbols.applicable_accessibilities = public,protected,internal,protected_internal
+
+dotnet_naming_symbols.private_fields.applicable_kinds = field
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private
+
+dotnet_naming_symbols.constants.applicable_kinds = field
+dotnet_naming_symbols.constants.required_modifiers = const
+
+# Style specifications
+dotnet_naming_style.pascal_case_style.capitalization = pascal_case
+dotnet_naming_style.camel_case_style.capitalization = camel_case
+dotnet_naming_style.upper_case_style.capitalization = all_upper
+dotnet_naming_style.upper_case_style.word_separator = _
+
+# Code style
+csharp_prefer_braces = false:warning
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
+
+# Regions are allowed
+csharp_style_namespace_declarations = file_scoped:warning
+
+# Avoid ternary operators
+csharp_style_conditional_delegate_call = false:warning
+csharp_style_prefer_switch_expression = false:warning
+
+# Documentation
+dotnet_diagnostic.CS1591.severity = warning
+
+# Enable Unity analyzers
+dotnet_analyzer_diagnostic.category-unity.severity = warning
+
+# Unity-specific message warnings
+dotnet_diagnostic.UNT0001.severity = warning  # Empty Unity message
+dotnet_diagnostic.UNT0002.severity = warning  # Inefficient tag comparison
+dotnet_diagnostic.UNT0003.severity = warning  # Usage of generic GetComponent
+dotnet_diagnostic.UNT0004.severity = warning  # Time.fixedDeltaTime used with Update
+dotnet_diagnostic.UNT0005.severity = warning  # Time.deltaTime used with FixedUpdate
+dotnet_diagnostic.UNT0006.severity = warning  # Incorrect message signature
+dotnet_diagnostic.UNT0007.severity = warning  # Null coalescing on Unity objects
+dotnet_diagnostic.UNT0008.severity = warning  # Null propagation on Unity objects
+dotnet_diagnostic.UNT0009.severity = warning  # Missing static constructor in InitializeOnLoad
+dotnet_diagnostic.UNT0010.severity = warning  # Component instance used to access static member
+dotnet_diagnostic.UNT0011.severity = warning  # Incorrect ScriptableObject constructor
+dotnet_diagnostic.UNT0012.severity = warning  # Unused coroutine return value
+dotnet_diagnostic.UNT0013.severity = warning  # Invalid or redundant SerializeField attribute
+dotnet_diagnostic.UNT0014.severity = warning  # GetComponent called with non-Component/Interface type
+dotnet_diagnostic.UNT0015.severity = warning  # Incorrect method signature for InitializeOnLoadMethod
+dotnet_diagnostic.UNT0016.severity = warning  # Unsafe way to get the method name
+dotnet_diagnostic.UNT0017.severity = warning  # SetPixels invocation is slow
+dotnet_diagnostic.UNT0018.severity = warning  # System.Reflection features not supported by IL2CPP
+dotnet_diagnostic.UNT0019.severity = warning  # Unnecessary indirection for setting position and rotation
+dotnet_diagnostic.UNT0020.severity = warning  # MenuItem attribute used on non-static method
+dotnet_diagnostic.UNT0021.severity = warning  # Unity message should be protected (for performance)
+dotnet_diagnostic.UNT0022.severity = warning  # Inefficient method to set position and rotation
+dotnet_diagnostic.UNT0023.severity = warning  # Coalescing assignment on Unity objects
+dotnet_diagnostic.UNT0024.severity = warning  # Give priority to scalar calculation over vector calculation
+dotnet_diagnostic.UNT0025.severity = warning  # Input.inputString is deprecated
+dotnet_diagnostic.UNT0026.severity = warning  # GetComponent always allocates
+dotnet_diagnostic.UNT0027.severity = warning  # Do not call Object.GetHashCode()
+dotnet_diagnostic.UNT0028.severity = warning  # Use NonAllocatingPerformance.TryGetComponent instead of GetComponent
+dotnet_diagnostic.UNT0029.severity = warning  # Pattern matching with null on Unity objects
+dotnet_diagnostic.UNT0030.severity = warning  # Avoid using Find methods in Update
+dotnet_diagnostic.UNT0031.severity = warning  # Destroy calls should not be used in Edit mode
+dotnet_diagnostic.UNT0032.severity = warning  # Inefficient method to set localPosition and localRotation
+dotnet_diagnostic.UNT0033.severity = warning  # Incorrect message case
+dotnet_diagnostic.UNT0034.severity = warning  # Avoid using `ForEach` on Unity collections in performance critical contexts
+dotnet_diagnostic.UNT0035.severity = warning  # Don't destroy assets
+dotnet_diagnostic.UNT0036.severity = warning  # Inefficient method to get position and rotation
+dotnet_diagnostic.UNT0037.severity = warning  # Unity objects should not use null conditional access
+dotnet_diagnostic.UNT0038.severity = warning  # Use CompareTag instead of tag comparison
+dotnet_diagnostic.UNT0039.severity = warning  # Don't call a method in OnValidate that plays audio
+
+# Unity Source-Generated Files Exceptions
+dotnet_diagnostic.SGFE009.severity = none # T is a value-type and is passed by value
