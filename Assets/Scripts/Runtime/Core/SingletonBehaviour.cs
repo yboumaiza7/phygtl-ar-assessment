@@ -29,7 +29,7 @@ namespace Phygtl.ARAssessment.Core
         /// <summary>
         /// The cached instance.
         /// </summary>
-        private static T instance;
+        protected static T instance;
 
 		/// <summary>
 		/// Whether the instance is going to be destroyed.

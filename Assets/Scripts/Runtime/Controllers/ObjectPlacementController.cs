@@ -2,6 +2,7 @@
 
 using System.Collections.Generic;
 using Phygtl.ARAssessment.Core;
+using Phygtl.ARAssessment.Managers;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.XR.ARFoundation;
@@ -26,6 +27,16 @@ namespace Phygtl.ARAssessment.Controllers
 		/// The UI controller.
 		/// </summary>
 		public ObjectPlacementUIController UIController => uiController;
+
+		/// <summary>
+		/// The main camera.
+		/// </summary>
+		public Camera MainCamera => mainCamera;
+
+		/// <summary>
+		/// The preferred plane alignment.
+		/// </summary>
+		public PlaneAlignment PreferredPlaneAlignment => preferedPlaneAlignment;
 
 		#endregion
 
@@ -84,6 +95,10 @@ namespace Phygtl.ARAssessment.Controllers
 			eventSystem = FindFirstObjectByType<EventSystem>();
 
 			TryRetreiveCamera();
+
+			// Clear the placeable objects cache
+			foreach (var placeableObject in PlaceableObjectManager.Default.placeableObjects)
+				placeableObject.Clear();
 		}
 
 		/// <summary>

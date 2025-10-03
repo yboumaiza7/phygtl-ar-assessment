@@ -16,7 +16,7 @@ namespace Phygtl.ARAssessment.Components
 	{
 		#region Properties
 
-		public bool IsOpen => gameObject.activeSelf;
+		public bool IsOpen => isOpen;
 
 		#endregion
 
@@ -55,6 +55,11 @@ namespace Phygtl.ARAssessment.Components
 		/// </summary>
 		private RectTransform rectTransform;
 
+		/// <summary>
+		/// Whether the wheel is open.
+		/// </summary>
+		private bool isOpen;
+
 		#endregion
 
 		#region Utility Methods
@@ -66,12 +71,15 @@ namespace Phygtl.ARAssessment.Components
 		public void Show(bool immediate = false)
 		{
 			if (immediate)
+			{
 				gameObject.SetActive(true);
+
+				isOpen = true;
+			}
 			else
 				_ = ShowAsync();
 		}
 
-	
 		/// <summary>
 		/// Hides the wheel.
 		/// </summary>
@@ -79,7 +87,11 @@ namespace Phygtl.ARAssessment.Components
 		public void Hide(bool immediate = false)
 		{
 			if (immediate)
+			{
 				gameObject.SetActive(false);
+
+				isOpen = false;
+			}
 			else
 				_ = HideAsync();
 		}
@@ -89,9 +101,13 @@ namespace Phygtl.ARAssessment.Components
 		/// </summary>
 		public async Task ShowAsync()
 		{
+			await Task.Yield();
+
 			gameObject.SetActive(true);
 
 			await Task.CompletedTask;
+
+			isOpen = true;
 		}
 
 		/// <summary>
@@ -99,10 +115,15 @@ namespace Phygtl.ARAssessment.Components
 		/// </summary>
 		public async Task HideAsync()
 		{
-			await Task.CompletedTask;
+			await Task.Yield();
 
 			gameObject.SetActive(false);
+
+			isOpen = false;
+
+			await Task.CompletedTask;
 		}
+
 		/// <summary>
 		/// Initializes the object placement wheel.
 		/// </summary>
@@ -116,7 +137,7 @@ namespace Phygtl.ARAssessment.Components
 
 				return;
 			}
-			
+
 			// Stretch the wheel both horizontally and vertically, centering it
 			rectTransform.anchorMin = Vector2.zero;
 			rectTransform.anchorMax = Vector2.one;
@@ -128,18 +149,22 @@ namespace Phygtl.ARAssessment.Components
 
 			for (var i = 0; i < objectsCount; i++)
 			{
-				var obj = manager.placeableObjects[i];
 				var slot = slotPrefab ? Instantiate(slotPrefab, transform) : null;
 				var icon = slotIconPrefab ? Instantiate(slotIconPrefab, transform) : null;
 
-				if (slot)
-					slot.Initialize(i, objectsCount);
+				if (!slot || !icon)
+				{
+					AppDebugger.LogError("Couldn't initialize the object placement wheel because the slot or the icon was not found!", this, nameof(ObjectPlacementWheel));
 
-				if (icon)
-					icon.Initialize(obj.icon, i, objectsCount);
+					continue;
+				}
+
+				var obj = manager.placeableObjects[i];
+
+				slot.Initialize(i, icon);
+				icon.Initialize(i, slot);
 			}
 		}
-
 
 		#endregion
 

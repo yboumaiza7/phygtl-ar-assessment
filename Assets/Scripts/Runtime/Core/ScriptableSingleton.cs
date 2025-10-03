@@ -49,6 +49,6 @@ namespace Phygtl.ARAssessment.Core
 		/// <summary>
 		/// The cached instance of the scriptable object.
 		/// </summary>
-		private static T instance;
+		protected static T instance;
 	}
 }

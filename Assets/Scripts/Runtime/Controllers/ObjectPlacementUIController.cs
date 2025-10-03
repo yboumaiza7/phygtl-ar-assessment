@@ -25,6 +25,11 @@ namespace Phygtl.ARAssessment.Controllers
 		/// </summary>
 		public ObjectPlacementWheel Wheel => objectPlacementWheel;
 
+		/// <summary>
+		/// The current placement data.
+		/// </summary>
+		public ObjectPlacementPoint CurrentPlacement => currentPlacementData;
+
 		#endregion
 
 		#region Events

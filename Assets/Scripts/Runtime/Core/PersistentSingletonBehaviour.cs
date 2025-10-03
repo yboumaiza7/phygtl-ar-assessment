@@ -38,11 +38,6 @@ namespace Phygtl.ARAssessment.Core
 		}
 
 		/// <summary>
-		/// The cached instance.
-		/// </summary>
-		private static T instance;
-
-		/// <summary>
 		/// On Awake, ensure that only one instance exists. If not, destroy the current instance.
 		/// </summary>
 		protected override void Awake()
