@@ -17,31 +17,42 @@ MonoBehaviour:
     icon:
       path: Sprites\Boom Box
     defaultScale: {x: 20, y: 20, z: 20}
+    isKinematic: 0
+    mass: 2
     downloadUrl: https://bxbstudio.dev/test/assets/BoomBox.glb
     localDownloadUrl: http://localhost/phygtl/assets/BoomBox.glb
   - name: Chair
     icon:
       path: Sprites\Chair
     defaultScale: {x: 1.5, y: 1.5, z: 1.5}
+    isKinematic: 0
+    mass: 5
     downloadUrl: https://bxbstudio.dev/test/assets/SheenChair.glb
     localDownloadUrl: http://localhost/phygtl/assets/SheenChair.glb
   - name: Chess Game
     icon:
       path: Sprites\Chess Game
     defaultScale: {x: 0.8, y: 0.8, z: 0.8}
+    isKinematic: 0
+    mass: 0.5
     downloadUrl: https://bxbstudio.dev/test/assets/ChessGame.glb
     localDownloadUrl: http://localhost/phygtl/assets/ChessGame.glb
   - name: Toy Car
     icon:
       path: Sprites\Toy Car
     defaultScale: {x: 5, y: 5, z: 5}
+    isKinematic: 0
+    mass: 0.5
     downloadUrl: https://bxbstudio.dev/test/assets/ToyCar.glb
     localDownloadUrl: http://localhost/phygtl/assets/ToyCar.glb
   - name: Water Bottle
     icon:
       path: Sprites\Water Bottle
     defaultScale: {x: 0.75, y: 0.75, z: 0.75}
+    isKinematic: 0
+    mass: 0.3
     downloadUrl: https://bxbstudio.dev/test/assets/WaterBottle.glb
     localDownloadUrl: http://localhost/phygtl/assets/WaterBottle.glb
+  minMaxScale: {x: 0.5, y: 2}
   cacheDirectory: DownloadCache
   useLocalDownload: 0

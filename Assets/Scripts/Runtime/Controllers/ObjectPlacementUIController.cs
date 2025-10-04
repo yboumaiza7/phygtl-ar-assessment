@@ -108,11 +108,13 @@ namespace Phygtl.ARAssessment.Controllers
 				return;
 			}
 
-			currentPlacementData = default;
-
 			await objectPlacementWheel.HideAsync();
 
 			OnWheelClosed?.Invoke(objectPlacementWheel);
+
+			currentPlacementData = default;
+
+			AppDebugger.Log("Placement UI closed", this, nameof(ObjectPlacementUIController));
 		}
 
 		/// <summary>

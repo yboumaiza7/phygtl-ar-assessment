@@ -7,13 +7,13 @@ EditorBuildSettings:
   m_Scenes:
   - enabled: 1
     path: Assets/Scenes/SampleScene.unity
-    guid: 99c9720ab356a0642a771bea13969a05
+    guid: c04ee045da2483e4a83c0e749b341194
   m_configObjects:
     AR Foundation RemoteARFoundationRemoteLoaderSettings: {fileID: 11400000, guid: f69d3f2bd87e7574d81d5e5327aab4ed, type: 2}
     AR Foundation RemoteARFoundationRemoteSessionRecordsData: {fileID: 11400000, guid: 130d6eba46319024394d887718f2f69a, type: 2}
     UnityEditor.XR.ARCore.ARCoreSettings: {fileID: 11400000, guid: e8d51082fe41a5143bc3c19e6eed3dfb, type: 2}
     UnityEditor.XR.ARKit.ARKitSettings: {fileID: 11400000, guid: 3b76cfd4803ac7042b6093303458b15a, type: 2}
-    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+    com.unity.input.settings.actions: {fileID: -944628639613478452, guid: c348712bda248c246b8c49b3db54643f, type: 3}
     com.unity.xr.arfoundation.simulation_settings: {fileID: 11400000, guid: 907deb4dc606ff845a112d69e31c5cf4, type: 2}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: a7d5ee0fbc2b07a4aa4bfd8833bad522, type: 2}
   m_UseUCBPForAssetBundles: 0

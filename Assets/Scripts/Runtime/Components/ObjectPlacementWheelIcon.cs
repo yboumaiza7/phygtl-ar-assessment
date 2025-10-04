@@ -9,6 +9,7 @@ namespace Phygtl.ARAssessment.Components
 	/// <summary>
 	/// A component that displays an icon on the object placement wheel.
 	/// </summary>
+	[RequireComponent(typeof(RectTransform))]
 	[RequireComponent(typeof(Image))]
 	public class ObjectPlacementWheelIcon : MonoBehaviour
 	{

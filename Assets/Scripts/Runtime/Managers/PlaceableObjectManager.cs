@@ -40,6 +40,16 @@ namespace Phygtl.ARAssessment.Managers
 		public List<PlaceableObject> placeableObjects;
 
 		/// <summary>
+		/// The minimum and maximum scale of the placeable objects.
+		/// </summary>
+		public Vector2 minMaxScale = new(0.5f, 2f);
+
+		/// <summary>
+		/// Whether to use gravity for the placeable objects.
+		/// </summary>
+		public bool useGravity;
+
+		/// <summary>
 		/// The directory to cache the placeable objects.
 		/// </summary>
 		public string cacheDirectory = DEFAULT_CACHE_DIRECTORY;

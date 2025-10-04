@@ -1,22 +1,27 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using DG.Tweening;
 using Phygtl.ARAssessment.Controllers;
-using Phygtl.ARAssessment.Core;
 using Phygtl.ARAssessment.Data;
 using Phygtl.ARAssessment.IO;
 using Phygtl.ARAssessment.Managers;
-using Phygtl.ARAssessment.Utilities;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using UnityEngine.XR.Interaction.Toolkit.AffordanceSystem.Rendering;
+using UnityEngine.XR.Interaction.Toolkit.AffordanceSystem.State;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using UnityEngine.XR.Interaction.Toolkit.Transformers;
+using Utilities;
 
 namespace Phygtl.ARAssessment.Components
 {
 	/// <summary>
 	/// A component that displays a slot on the object placement wheel.
 	/// </summary>
+	[RequireComponent(typeof(RectTransform))]
 	[RequireComponent(typeof(Image))]
 	public class ObjectPlacementWheelSlot : MonoBehaviour, IPointerClickHandler
 	{
@@ -136,6 +141,11 @@ namespace Phygtl.ARAssessment.Components
 		/// Whether the slot is initialized.
 		/// </summary>
 		private bool initialized;
+
+		/// <summary>
+		/// Whether the slot is busy.
+		/// </summary>
+		private bool busy;
 
 		#endregion
 
@@ -265,6 +275,37 @@ namespace Phygtl.ARAssessment.Components
 			initialized = true;
 		}
 
+		public async Task ShowAsync()
+		{
+			Hide();
+
+			image.DOFade(busy ? loadingSlotColor.a : defaultSlotColor.a, wheel.animationDuration);
+			iconImage.DOFade(busy ? loadingIconColor.a : defaultIconColor.a, wheel.animationDuration);
+			await loadProgressImage.DOFade(defaultProgressColor.a, wheel.animationDuration).AsyncWaitForCompletion();
+		}
+
+		public async Task HideAsync()
+		{
+			image.DOFade(0f, wheel.animationDuration);
+			iconImage.DOFade(0f, wheel.animationDuration);
+			await loadProgressImage.DOFade(0f, wheel.animationDuration).AsyncWaitForCompletion();
+		}
+
+		public void Hide()
+		{
+			Color clearImageColor = image.color;
+			Color clearIconColor = iconImage.color;
+			Color clearProgressColor = loadProgressImage.color;
+
+			clearImageColor.a = 0f;
+			clearIconColor.a = 0f;
+			clearProgressColor.a = 0f;
+
+			image.color = clearImageColor;
+			iconImage.color = clearIconColor;
+			loadProgressImage.color = clearProgressColor;
+		}
+
 		#endregion
 
 		#region Helper Methods
@@ -279,10 +320,9 @@ namespace Phygtl.ARAssessment.Components
 
 			var obj = manager.placeableObjects[index];
 
-			clickHandlerImage.enabled = false;
+			clickHandlerImage.raycastTarget = false;
 			image.color = loadingSlotColor;
 			iconImage.color = loadingIconColor;
-			loadProgressImage.color = defaultProgressColor;
 
 			loadProgressImage.gameObject.SetActive(true);
 
@@ -323,7 +363,7 @@ namespace Phygtl.ARAssessment.Components
 			else
 				loadProgressImage.color = errorProgressColor;
 
-			clickHandlerImage.enabled = true;
+			clickHandlerImage.raycastTarget = true;
 		}
 
 		/// <summary>
@@ -331,6 +371,7 @@ namespace Phygtl.ARAssessment.Components
 		/// </summary>
 		private IEnumerator LoadingProgressBarCoroutine()
 		{
+			loadProgressImage.color = defaultProgressColor;
 			loadProgressImage.fillAmount = 0f;
 
 			float duration = loadingProgressBarPeriod * 0.5f;
@@ -349,11 +390,28 @@ namespace Phygtl.ARAssessment.Components
 		/// <param name="filePath">The file path.</param>
 		private async Task LoadAndPlaceObject(PlaceableObject placeableObject, string filePath)
 		{
-			var loadingCoroutine = StartCoroutine(LoadingProgressBarCoroutine());
-			var asset = await GLTFAsset.LoadAsync(filePath);
-			GameObject gameObject = new($"{placeableObject.name} (Clone)");
+			foreach (var slot in wheel.Slots)
+			{
+				slot.image.color = slot.loadingSlotColor;
+				slot.iconImage.color = slot.loadingIconColor;
+			}
 
-			await asset?.InstantiateAsync(gameObject.transform);
+			controller.DisableInteraction = true;
+
+			var loadingCoroutine = StartCoroutine(LoadingProgressBarCoroutine());
+			var asset = await placeableObject.GetOrLoadGLTFAssetAsync(filePath);
+			GameObject gameObject = Instantiate(controller.placeableObjectPrefab, Vector3.zero, Quaternion.identity);
+
+			gameObject.name = $"{placeableObject.name} (Clone)";
+
+			if (asset != null)
+				await asset.InstantiateAsync(gameObject.transform);
+			else
+			{
+				AppDebugger.LogError("Couldn't load the object because the GLTF asset!", this, nameof(ObjectPlacementWheelSlot));
+
+				goto CANCEL_LOADING;
+			}
 
 			gameObject.transform.localScale = placeableObject.defaultScale;
 
@@ -389,20 +447,51 @@ namespace Phygtl.ARAssessment.Components
 
 			foreach (var filter in gameObject.GetComponentsInChildren<MeshFilter>(true))
 			{
-				if (filter.TryGetComponent<MeshCollider>(out _))
+				if (filter.TryGetComponent<Collider>(out _))
 					continue;
 
 				var meshCollider = filter.gameObject.AddComponent<MeshCollider>();
 
-				meshCollider.sharedMesh = filter.sharedMesh;
+				meshCollider.sharedMesh = filter.mesh;
+				meshCollider.convex = true;
 			}
 
+			// Add ARTransformer & Rigidbody to enable object manipulation
+			if (!gameObject.TryGetComponent<ARTransformer>(out var transformer))
+				transformer = gameObject.AddComponent<ARTransformer>();
+
+			transformer.minScale = gameObject.transform.localScale.x * manager.minMaxScale.x;
+			transformer.maxScale = gameObject.transform.localScale.x * manager.minMaxScale.y;
+
+			if (!gameObject.TryGetComponent<Rigidbody>(out var rigidbody))
+				rigidbody = gameObject.AddComponent<Rigidbody>();
+
+			rigidbody.isKinematic = !manager.useGravity;
+			rigidbody.useGravity = manager.useGravity;
+			rigidbody.mass = placeableObject.mass;
+
+			gameObject.SetActive(true);
+
+		CANCEL_LOADING:
 			StopCoroutine(loadingCoroutine);
 			loadProgressImage.DOKill();
 
 			loadProgressImage.fillAmount = image.fillAmount;
+			controller.DisableInteraction = false;
 
-			await uiController.CloseAsync();
+			foreach (var slot in wheel.Slots)
+			{
+				if (!slot.clickHandlerImage.raycastTarget)
+					continue;
+
+				slot.image.color = slot.defaultSlotColor;
+				slot.iconImage.color = slot.defaultIconColor;
+			}
+
+			if (asset != null)
+				await uiController.CloseAsync();
+			else
+				loadProgressImage.color = errorProgressColor;
 		}
 
 		#endregion
@@ -415,7 +504,7 @@ namespace Phygtl.ARAssessment.Components
 		/// <param name="eventData">The pointer event data.</param>
 		public void OnPointerClick(PointerEventData eventData)
 		{
-			if (!initialized || !uiController.Wheel.IsOpen)
+			if (!initialized || controller.DisableInteraction || !uiController.Wheel.IsOpen)
 				return;
 
 			var obj = manager.placeableObjects[index];

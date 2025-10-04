@@ -5,8 +5,12 @@ using Phygtl.ARAssessment.Core;
 using Phygtl.ARAssessment.Managers;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 using UnityEngine.XR.ARFoundation;
 using UnityEngine.XR.ARSubsystems;
+using UnityEngine.XR.Interaction.Toolkit.Inputs.Readers;
+using UnityEngine.XR.Interaction.Toolkit.Interactors;
+using UnityEngine.XR.Interaction.Toolkit.Transformers;
 using EnhancedTouch = UnityEngine.InputSystem.EnhancedTouch;
 
 #endregion
@@ -38,15 +42,33 @@ namespace Phygtl.ARAssessment.Controllers
 		/// </summary>
 		public PlaneAlignment PreferredPlaneAlignment => preferedPlaneAlignment;
 
+		/// <summary>
+		/// Whether the interaction is disabled. This disables all user interactions with the placement controller and the placement UI.
+		/// </summary>
+		public bool DisableInteraction { get; set; }
+
 		#endregion
 
 		#region Fields
+
+		/// <summary>
+		/// The prefab for the placeable object.
+		/// </summary>
+		public GameObject placeableObjectPrefab;
 
 		/// <summary>
 		/// The allowed plane alignment.
 		/// </summary>
 		[SerializeField]
 		private PlaneAlignment preferedPlaneAlignment = PlaneAlignment.HorizontalUp;
+		
+        [SerializeField]
+        [Tooltip("The AR ray interactor that determines where to spawn the object.")]
+		[FormerlySerializedAs("m_ARInteractor")]
+        private XRRayInteractor interactor;
+
+		[SerializeField]
+        private XRInputButtonReader placeObjectInput = new("Spawn Object");
 
 		/// <summary>
 		/// The raycast manager.
@@ -79,16 +101,17 @@ namespace Phygtl.ARAssessment.Controllers
 		/// </summary>
 		private Camera mainCamera;
 
+		private bool attemptSpawn;
+
 		#endregion
 
 		#region Methods
 
-		/// <summary>
-		/// Event handler for the awake event.
-		/// </summary>
 		protected override void Awake()
 		{
 			base.Awake();
+
+			GLTFHelper.Initialize();
 
 			raycastManager = GetComponent<ARRaycastManager>();
 			uiController = GetComponent<ObjectPlacementUIController>();
@@ -101,24 +124,36 @@ namespace Phygtl.ARAssessment.Controllers
 				placeableObject.Clear();
 		}
 
-		/// <summary>
-		/// Event handler for the enable event.
-		/// </summary>
+		private void Update()
+		{
+			// Wait a frame after the Spawn Object input is triggered to actually cast against AR planes and spawn
+            // in order to ensure the touchscreen gestures have finished processing to allow the ray pose driver
+            // to update the pose based on the touch position of the gestures.
+            if (attemptSpawn)
+            {
+                attemptSpawn = false;
+
+                TryShowWheel();
+
+                return;
+            }
+
+            if (placeObjectInput.ReadWasPerformedThisFrame())
+                attemptSpawn = true;
+		}
+
 		private void OnEnable()
 		{
-			EnhancedTouch.TouchSimulation.Enable();
+			//EnhancedTouch.TouchSimulation.Enable();
 			EnhancedTouch.EnhancedTouchSupport.Enable();
-			EnhancedTouch.Touch.onFingerDown += OnFingerDown;
+			placeObjectInput.EnableDirectActionIfModeUsed();
 		}
 		
-		/// <summary>
-		/// Event handler for the disable event.
-		/// </summary>
 		private void OnDisable()
 		{
-			EnhancedTouch.TouchSimulation.Disable();
+			//EnhancedTouch.TouchSimulation.Disable();
 			EnhancedTouch.EnhancedTouchSupport.Disable();
-			EnhancedTouch.Touch.onFingerDown -= OnFingerDown;
+			placeObjectInput.DisableDirectActionIfModeUsed();
 		}
 
 		#endregion
@@ -146,15 +181,12 @@ namespace Phygtl.ARAssessment.Controllers
 		/// </summary>
 		/// <param name="finger">The finger to check.</param>
 		/// <returns>True if the finger is over the UI, false otherwise.</returns>
-		private bool IsFingerOverUI(EnhancedTouch.Finger finger)
+		private bool IsFingerOverUI()
 		{
 			if (!eventSystem)
 				return false;
 
-			PointerEventData pointerEventData = new(eventSystem)
-			{
-				position = finger.currentTouch.screenPosition
-			};
+			PointerEventData pointerEventData = new(eventSystem);
 
 			raycastResults.Clear();
 			eventSystem.RaycastAll(pointerEventData, raycastResults);
@@ -162,17 +194,13 @@ namespace Phygtl.ARAssessment.Controllers
 			return raycastResults.Count > 0;
 		}
 
-		#endregion
-
-		#region Event Handlers
-
 		/// <summary>
 		/// Event handler for the finger down event.
 		/// </summary>
 		/// <param name="finger">The finger that was pressed.</param>
-		private void OnFingerDown(EnhancedTouch.Finger finger)
+		private void TryShowWheel()
 		{
-			if (finger.index != 0 || IsFingerOverUI(finger) || !raycastManager.Raycast(finger.currentTouch.screenPosition, raycastHits, TrackableType.PlaneWithinPolygon))
+			if (DisableInteraction || IsFingerOverUI() || uiController.Wheel.IsOpen || !interactor.TryGetCurrentARRaycastHit(out var hit))
 				return;
 
 			if (!mainCamera && !TryRetreiveCamera())
@@ -182,15 +210,18 @@ namespace Phygtl.ARAssessment.Controllers
 				return;
 			}
 
-			foreach (var hit in raycastHits)
-			{
-				if (hit.trackable is not ARPlane plane || plane.alignment != preferedPlaneAlignment)
-					continue;
+			if (hit.trackable is not ARPlane plane || plane.alignment != preferedPlaneAlignment)
+				return;
 
-				_ = uiController.OpenAsync(hit, mainCamera);
+			// Check we're hitting a placeable object
+			PointerEventData pointerEventData = new(eventSystem);
+			Vector3 direction = (hit.pose.position - mainCamera.transform.position).normalized;
+			Ray ray = new(mainCamera.transform.position, direction);
 
-				break; // Break the loop because we only want to open the placement UI once.
-			}
+			if (Physics.Raycast(ray, out var raycastHit, 10000f, Physics.AllLayers, QueryTriggerInteraction.Ignore) && raycastHit.collider.GetComponentInParent<ARTransformer>())
+				return;
+
+			_ = uiController.OpenAsync(hit, mainCamera);
 		}
 
 		#endregion

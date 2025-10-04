@@ -1,16 +1,19 @@
 #region Namespaces
 
+using System;
 using System.IO;
 using System.Threading.Tasks;
 using GLTFast;
 using UnityEngine;
+
+using Object = UnityEngine.Object;
 
 #endregion
 
 namespace Phygtl.ARAssessment.Core
 {
 	/// <summary>
-	/// A class for loading and instantiating GLTF assets.
+	/// A class for loading and instantiating GLTF assets with performance optimizations.
 	/// </summary>
     public class GLTFAsset
     {
@@ -21,6 +24,7 @@ namespace Phygtl.ARAssessment.Core
 
 		/// <summary>
 		/// Loads a GLTF asset asynchronously.
+		/// glTFast handles threading internally and yields automatically to prevent frame drops.
 		/// </summary>
 		/// <param name="filePath">The path to the GLTF file.</param>
 		/// <returns>The GLTF asset if loaded successfully, otherwise null.</returns>
@@ -29,12 +33,36 @@ namespace Phygtl.ARAssessment.Core
 			if (string.IsNullOrEmpty(filePath) || !File.Exists(filePath))
 				return null;
 
-			GltfImport import = new();
-			var bytes = File.ReadAllBytes(filePath);
+			try
+			{
+				// glTFast handles async operations natively without blocking
+				// It automatically yields to prevent frame drops
+				GltfImport import = new(deferAgent: GLTFHelper.DeferAgent);
 
-			return await import.Load(bytes, new(filePath)) ? new() { importer = import } : null;
+				// Convert to URI format for efficient streaming
+				Uri filePathUri = new(filePath);
+				
+				// Load from URI - glTFast streams and parses incrementally
+				// Internal yields prevent frame drops
+				bool success = await import.Load(filePathUri);
+
+				if (success)
+				{
+					return new GLTFAsset { importer = import };
+				}
+				else
+				{
+					AppDebugger.LogError($"Failed to load GLTF asset from: {filePath}", null, nameof(GLTFAsset));
+					return null;
+				}
+			}
+			catch (Exception ex)
+			{
+				AppDebugger.LogError($"Error loading GLTF asset from {filePath}: {ex}", null, nameof(GLTFAsset));
+				return null;
+			}
 		}
-		
+
 		/// <summary>
 		/// Instantiates the GLTF asset asynchronously.
 		/// </summary>
@@ -42,7 +70,18 @@ namespace Phygtl.ARAssessment.Core
 		/// <returns>Whether the instantiation was successful.</returns>
 		public async Task<bool> InstantiateAsync(Transform parent = null)
 		{
-			return await importer.InstantiateMainSceneAsync(parent);
+			if (importer == null)
+				return false;
+
+			try
+			{
+				return await importer.InstantiateMainSceneAsync(parent);
+			}
+			catch (Exception ex)
+			{
+				Debug.LogError($"Error instantiating GLTF asset: {ex.Message}");
+				return false;
+			}
 		}
 
 		/// <summary>
@@ -52,7 +91,27 @@ namespace Phygtl.ARAssessment.Core
 		/// <returns>Whether the instantiation was successful.</returns>
 		public async Task<bool> InstantiateAsync(IInstantiator instantiator)
 		{
-			return await importer.InstantiateMainSceneAsync(instantiator);
+			if (importer == null)
+				return false;
+
+			try
+			{
+				return await importer.InstantiateMainSceneAsync(instantiator);
+			}
+			catch (Exception ex)
+			{
+				Debug.LogError($"Error instantiating GLTF asset: {ex.Message}");
+				return false;
+			}
+		}
+
+		/// <summary>
+		/// Disposes of the importer and frees resources.
+		/// </summary>
+		public void Dispose()
+		{
+			importer?.Dispose();
+			importer = null;
 		}
     }
 }

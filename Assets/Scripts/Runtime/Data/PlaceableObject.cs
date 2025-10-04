@@ -2,6 +2,7 @@
 
 using System;
 using System.Threading.Tasks;
+using GLTFast;
 using Phygtl.ARAssessment.Core;
 using Phygtl.ARAssessment.IO;
 using Phygtl.ARAssessment.Managers;
@@ -52,6 +53,11 @@ namespace Phygtl.ARAssessment.Data
 		public bool IsDownloaded => downloadTask?.IsCompleted ?? false;
 
 		/// <summary>
+		/// Whether the placeable object is loaded.
+		/// </summary>
+		public bool IsLoaded => gltfAsset != null;
+
+		/// <summary>
 		/// Downloads the placeable object asynchronously.
 		/// </summary>
 		/// <returns>The task for downloading the placeable object.</returns>
@@ -82,6 +88,11 @@ namespace Phygtl.ARAssessment.Data
 		public Vector3 defaultScale = Vector3.one;
 
 		/// <summary>
+		/// The mass of the placeable object.
+		/// </summary>
+		public float mass = 1f;
+
+		/// <summary>
 		/// The download URL of the placeable object.
 		/// </summary>
 		[SerializeField]
@@ -100,13 +111,33 @@ namespace Phygtl.ARAssessment.Data
 		/// </summary>
 		private Task<DownloadResponse> downloadTask;
 
+		/// <summary>
+		/// The cached GLTF importer.
+		/// </summary>
+		private GLTFAsset gltfAsset;
+
 		#endregion
 
 		#region Helper Methods
 
+		/// <summary>
+		/// Gets the GLTF asset cached or loads it asynchronously.
+		/// </summary>
+		/// <param name="filePath">The file path.</param>
+		/// <returns>The GLTF asset.</returns>
+		public async Task<GLTFAsset> GetOrLoadGLTFAssetAsync(string filePath)
+		{
+			return IsLoaded ? gltfAsset : (gltfAsset = await GLTFAsset.LoadAsync(filePath));
+		}
+
+		/// <summary>
+		/// Clears the cached GLTF asset and its download task.
+		/// </summary>
 		internal void Clear()
 		{
 			downloadTask = null;
+			gltfAsset?.Dispose();
+			gltfAsset = null;
 		}
 
 		#endregion
