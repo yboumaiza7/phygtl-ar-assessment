@@ -80,6 +80,10 @@ namespace Phygtl.ARAssessment.Controllers
 		/// </summary>
 		private ObjectPlacementUIController uiController;
 
+		/// <summary>
+		/// The selection controller.
+		/// </summary>
+		private ObjectSelectionController selectionController;
 		
 		/// <summary>
 		/// The event system.
@@ -116,6 +120,7 @@ namespace Phygtl.ARAssessment.Controllers
 			raycastManager = GetComponent<ARRaycastManager>();
 			uiController = GetComponent<ObjectPlacementUIController>();
 			eventSystem = FindFirstObjectByType<EventSystem>();
+			selectionController = ObjectSelectionController.Default;
 
 			TryRetreiveCamera();
 
@@ -220,6 +225,9 @@ namespace Phygtl.ARAssessment.Controllers
 
 			if (Physics.Raycast(ray, out var raycastHit, 10000f, Physics.AllLayers, QueryTriggerInteraction.Ignore) && raycastHit.collider.GetComponentInParent<ARTransformer>())
 				return;
+
+			if (selectionController)
+				selectionController.ClearSelection();
 
 			_ = uiController.OpenAsync(hit, mainCamera);
 		}
