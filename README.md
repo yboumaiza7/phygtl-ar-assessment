@@ -4,17 +4,20 @@ A professional-grade Unity AR application demonstrating advanced AR development 
 
 ## 📋 Table of Contents
 
-- [Project Overview](#project-overview)
-- [Key Features & Technical Highlights](#key-features--technical-highlights)
-- [Architecture & Design Patterns](#architecture--design-patterns)
-- [Technical Implementation](#technical-implementation)
-- [Prerequisites](#prerequisites)
-- [Setup & Installation](#setup--installation)
-- [Usage Guide](#usage-guide)
-- [Project Structure](#project-structure)
-- [Code Quality & Best Practices](#code-quality--best-practices)
-- [Performance Optimizations](#performance-optimizations)
-- [Build Instructions](#build-instructions)
+- [🎯 Project Overview](#-project-overview)
+- [✨ Key Features & Technical Highlights](#-key-features--technical-highlights)
+- [🏗️ Architecture & Design Patterns](#️-architecture--design-patterns)
+- [🔧 Technical Implementation](#-technical-implementation)
+- [📋 Prerequisites](#-prerequisites)
+- [🚀 Setup & Installation](#-setup--installation)
+- [🎮 Usage Guide](#-usage-guide)
+- [📁 Project Structure](#-project-structure)
+- [💎 Code Quality & Best Practices](#-code-quality--best-practices)
+- [⚡ Performance Optimizations](#-performance-optimizations)
+- [🔨 Build Instructions](#-build-instructions)
+- [🎓 Skills Demonstrated](#-skills-demonstrated)
+- [📞 Contact](#-contact)
+- [📄 License](#-license)
 
 ---
 
@@ -777,4 +780,4 @@ This project is developed as a skill assessment for client evaluation purposes.
 
 ---
 
-**Built with ❤️ using Unity 6 and AR Foundation**
+**Built with ❤️ by Yassine**
