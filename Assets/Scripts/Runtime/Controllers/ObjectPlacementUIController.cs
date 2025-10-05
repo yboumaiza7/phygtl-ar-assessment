@@ -69,16 +69,9 @@ namespace Phygtl.ARAssessment.Controllers
 		/// </summary>
 		private ObjectPlacementWheel objectPlacementWheel;
 
-		private ObjectPlacementController controller;
-
 		#endregion
 
 		#region Methods
-
-		private void Awake()
-		{
-			controller = ObjectPlacementController.Default;
-		}
 
 		private void Start()
 		{
@@ -102,11 +95,7 @@ namespace Phygtl.ARAssessment.Controllers
 		public async Task CloseAsync()
 		{
 			if (!objectPlacementWheel)
-			{
-				AppDebugger.LogError("Couldn't close the placement UI because the object placement wheel was not set!", this, nameof(ObjectPlacementUIController));
-
 				return;
-			}
 
 			await objectPlacementWheel.HideAsync();
 
@@ -131,11 +120,7 @@ namespace Phygtl.ARAssessment.Controllers
 		public async Task OpenAsync(ObjectPlacementPoint placement)
 		{
 			if (!objectPlacementWheel)
-			{
-				AppDebugger.LogError("Couldn't open the placement UI because the object placement wheel was not set!", this, nameof(ObjectPlacementUIController));
-
 				return;
-			}
 
 			if (currentPlacementData.isValid)
 			{
